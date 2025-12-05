@@ -170,20 +170,30 @@ let
       echo "[workspace-launch] RMW_IMPLEMENTATION (final)=$RMW_IMPLEMENTATION" >&2
 
       # Discover launch files in the workspace.
+      share_root="${rosWorkspace}/share"
+
       launch_entries=()
       while IFS= read -r launch_file; do
-        # Typical layout: ${rosWorkspace}/share/<pkg>/launch/<file>.launch.py
-        pkg_dir="$(dirname "$launch_file")"                   # .../share/<pkg>/launch
-        pkg="$(basename "$(dirname "$pkg_dir")")"             # parent of launch -> <pkg>
-        base="$(basename "$launch_file")"                     # <file>.launch.py
+        # Strip the leading "${rosWorkspace}/share/" to get "<pkg>/.../foo.launch.py"
+        rel="''${launch_file#"$share_root/"}"
+        pkg="''${rel%%/*}"
+        base="$(basename "$launch_file")"
+
+        # Only keep launch files that are actually attached to a proper ROS package
+        if [ -z "$pkg" ] || [ ! -d "$share_root/$pkg" ] || [ ! -f "$share_root/$pkg/package.xml" ]; then
+          echo "[workspace-launch] Skipping non-package launch file: $launch_file (pkg='$pkg')" >&2
+          continue
+        fi
+
         launch_entries+=("$pkg:$base")
-      # ROS envs here are symlink forests; follow symlinks so we actually see launch files.
-      done < <(find -L "${rosWorkspace}/share" -maxdepth 4 -type f -name '*.launch.py' -print | sort)
+      # Follow symlinks so we actually see launch files in the symlink forest.
+      done < <(find -L "$share_root" -maxdepth 5 -type f -name '*.launch.py' -print | sort)
 
       if [ "''${#launch_entries[@]}" -eq 0 ]; then
-        echo "[workspace-launch] No launch files found under ${rosWorkspace}/share" >&2
+        echo "[workspace-launch] No launch files found under $share_root" >&2
         exit 0
       fi
+
 
       # --- Supervisor mode: manage multiple ros2 launch children ---
 
