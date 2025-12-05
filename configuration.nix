@@ -205,19 +205,13 @@ let
       }
       trap cleanup EXIT
       
-      python3 - << 'EOF'
-      import os, rclpy
-      print("RMW_IMPLEMENTATION env:", os.getenv("RMW_IMPLEMENTATION"))
-      print("rclpy from:", rclpy.__file__)
-      EOF
-
-      for entry in "''${launch_entries[@]}"; do
-        pkg="''${entry%%:*}"
-        launch="''${entry#*:}"
-        echo "[workspace-launch] Starting: ros2 launch $pkg $launch" >&2
-        ros2 launch "$pkg" "$launch" &
-        pids+=("$!")
-      done
+      # For now, just launch ONE file with exec (multiple execs are impossible anyway)
+      entry="${launch_entries[0]}"
+      pkg="${entry%%:*}"
+      launch="${entry#*:}"
+      
+      echo "[workspace-launch] Exec: ros2 launch $pkg $launch" >&2
+      exec ros2 launch "$pkg" "$launch"
 
       wait
     '';
