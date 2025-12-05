@@ -221,6 +221,10 @@ let
 
       trap on_term TERM INT
 
+      echo "[workspace-launch] ==== ENV DUMP (filtered) ====" >&2
+      env | grep -E 'RMW|AMENT|RCLPY|LD_LIBRARY_PATH' | sort >&2
+      echo "[workspace-launch] =============================" >&2
+
       echo "[workspace-launch] Launching ''${#launch_entries[@]} launch file(s)" >&2
 
       for entry in "''${launch_entries[@]}"; do
