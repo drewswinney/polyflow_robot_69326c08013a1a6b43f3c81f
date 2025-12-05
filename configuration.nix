@@ -116,7 +116,7 @@ let
       AMENT_PREFIX_PATH="''${AMENT_PREFIX_PATH-}"
       LD_LIBRARY_PATH="''${LD_LIBRARY_PATH-}"
       if [ -z "''${RMW_IMPLEMENTATION-}" ]; then
-        RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+        RMW_IMPLEMENTATION=rmw_fastrtps_cpp
       fi
       export RMW_IMPLEMENTATION
 
@@ -151,7 +151,7 @@ let
       done
       set -u
 
-      RMW_IMPLEMENTATION="''${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}"
+      RMW_IMPLEMENTATION="''${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}"
       export RMW_IMPLEMENTATION
       echo "[webrtc-launch] RMW_IMPLEMENTATION (post-setup)=$RMW_IMPLEMENTATION" >&2
 
@@ -159,9 +159,6 @@ let
         # Direct workspace env (keep it tight to avoid env overflow)
         "${rosWorkspace}/setup.bash"
         "${rosWorkspace}/local_setup.bash"
-        # RMW implementations to ensure plugins are registered
-        "${rosPkgs."rmw-cyclonedds-cpp"}/share/rmw_cyclonedds_cpp/local_setup.bash"
-        "${rosPkgs."rmw-implementation"}/share/rmw_implementation/local_setup.bash"
       )
 
       # Also pick up per-package local_setup scripts from the workspace only
@@ -182,12 +179,12 @@ let
       set -u
 
       # Force the desired RMW after sourcing in case any setup script overrode it.
-      RMW_IMPLEMENTATION="''${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}"
+      RMW_IMPLEMENTATION="''${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}"
       export RMW_IMPLEMENTATION
       echo "[workspace-launch] RMW_IMPLEMENTATION (post-setup)=$RMW_IMPLEMENTATION" >&2
 
       if [ -z "''${RMW_IMPLEMENTATION-}" ]; then
-        RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+        RMW_IMPLEMENTATION=rmw_fastrtps_cpp
       fi
       export RMW_IMPLEMENTATION
 
@@ -277,7 +274,7 @@ let
       set -u
 
       if [ -z "''${RMW_IMPLEMENTATION-}" ]; then
-        RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+        RMW_IMPLEMENTATION=rmw_fastrtps_cpp
       fi
       export RMW_IMPLEMENTATION
 
