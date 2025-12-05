@@ -141,6 +141,7 @@ let
       echo "[workspace-launch] AMENT_PREFIX_PATH=$AMENT_PREFIX_PATH" >&2
       echo "[workspace-launch] PYTHONPATH=$PYTHONPATH" >&2
       echo "[workspace-launch] LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >&2
+      echo "[workspace-launch] RMW_IMPLEMENTATION=$RMW_IMPLEMENTATION" >&2
 
       export PYTHONPATH
       export AMENT_PREFIX_PATH
