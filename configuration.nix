@@ -204,6 +204,12 @@ let
         wait
       }
       trap cleanup EXIT
+      
+      python3 - << 'EOF'
+      import os, rclpy
+      print("RMW_IMPLEMENTATION env:", os.getenv("RMW_IMPLEMENTATION"))
+      print("rclpy from:", rclpy.__file__)
+      EOF
 
       for entry in "''${launch_entries[@]}"; do
         pkg="''${entry%%:*}"
