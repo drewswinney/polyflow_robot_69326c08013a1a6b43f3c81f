@@ -143,7 +143,7 @@ let
       set -u
   
       # 3 Make sure RMW is set, but don't fight the environment if it already is
-      : "''${RMW_IMPLEMENTATION:=rmw_fastrtps_cpp}"
+      : "''${RMW_IMPLEMENTATION:=rmw_cyclonedds_cpp}"
       export RMW_IMPLEMENTATION
   
       echo "[workspace-launch] AMENT_PREFIX_PATH=$AMENT_PREFIX_PATH" >&2
@@ -263,15 +263,9 @@ let
       set -u
 
       if [ -z "''${RMW_IMPLEMENTATION-}" ]; then
-        RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+        RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       fi
       export RMW_IMPLEMENTATION
-
-      python3 - << 'EOF'
-      import rclpy, os, inspect
-      print("RMW_IMPLEMENTATION env:", os.environ.get("RMW_IMPLEMENTATION"))
-      print("rclpy from:", inspect.getfile(rclpy))
-      EOF
 
       exec ros2 launch webrtc webrtc.launch.py
     '';
