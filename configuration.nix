@@ -123,25 +123,15 @@ let
       set -u
       shopt -s nullglob
 
-      PYTHONPATH_BASE="${pythonPath}"
-      if [ -n "$PYTHONPATH_BASE" ]; then
-        PYTHONPATH="$PYTHONPATH_BASE''${PYTHONPATH:+:}''${PYTHONPATH}"
-      fi
-
-      AMENT_PREFIX_BASE="${amentPrefixPath}"
-      if [ -n "$AMENT_PREFIX_BASE" ]; then
-        AMENT_PREFIX_PATH="$AMENT_PREFIX_BASE''${AMENT_PREFIX_PATH:+:}''${AMENT_PREFIX_PATH}"
-      fi
-
-      LIBRARY_PATH_BASE="${libraryPath}"
-      if [ -n "$LIBRARY_PATH_BASE" ]; then
-        LD_LIBRARY_PATH="$LIBRARY_PATH_BASE''${LD_LIBRARY_PATH:+:}''${LD_LIBRARY_PATH}"
-      fi
+      PYTHONPATH="${pythonPath}"
+      AMENT_PREFIX_PATH="${amentPrefixPath}"
+      LD_LIBRARY_PATH="${libraryPath}"
 
       echo "[workspace-launch] AMENT_PREFIX_PATH=$AMENT_PREFIX_PATH" >&2
       echo "[workspace-launch] PYTHONPATH=$PYTHONPATH" >&2
       echo "[workspace-launch] LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >&2
       echo "[workspace-launch] RMW_IMPLEMENTATION=$RMW_IMPLEMENTATION" >&2
+
 
       export PYTHONPATH
       export AMENT_PREFIX_PATH
@@ -161,6 +151,10 @@ let
         done
       done
       set -u
+
+      RMW_IMPLEMENTATION="${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}"
+      export RMW_IMPLEMENTATION
+      echo "[webrtc-launch] RMW_IMPLEMENTATION (post-setup)=$RMW_IMPLEMENTATION" >&2
 
       setup_scripts=(
         # Direct workspace env (keep it tight to avoid env overflow)
@@ -187,6 +181,11 @@ let
         . "$script"
       done
       set -u
+
+      # Force the desired RMW after sourcing in case any setup script overrode it.
+      RMW_IMPLEMENTATION="${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}"
+      export RMW_IMPLEMENTATION
+      echo "[workspace-launch] RMW_IMPLEMENTATION (post-setup)=$RMW_IMPLEMENTATION" >&2
 
       if [ -z "''${RMW_IMPLEMENTATION-}" ]; then
         RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
