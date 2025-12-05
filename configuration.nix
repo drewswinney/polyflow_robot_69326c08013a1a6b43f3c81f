@@ -271,13 +271,13 @@ let
       fi
       export RMW_IMPLEMENTATION
 
-      exec ros2 launch webrtc webrtc.launch.py
-
       python3 - << 'EOF'
       import rclpy, os, inspect
       print("RMW_IMPLEMENTATION env:", os.environ.get("RMW_IMPLEMENTATION"))
       print("rclpy from:", inspect.getfile(rclpy))
       EOF
+
+      exec ros2 launch webrtc webrtc.launch.py
     '';
   };
 
