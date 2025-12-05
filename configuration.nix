@@ -108,7 +108,7 @@ let
       # 1 Source the env that nix-ros-overlay generated for the workspace
       if [ -f "${rosWorkspaceEnv}/setup.bash" ]; then
         echo "[workspace-launch] Sourcing rosWorkspaceEnv: ${rosWorkspaceEnv}/setup.bash" >&2
-        # shellcheck disable=SC1090
+        # shellcheck source=/dev/null  # avoid SC1091: external file not known at lint time
         . "${rosWorkspaceEnv}/setup.bash"
       else
         echo "[workspace-launch] WARNING: ${rosWorkspaceEnv}/setup.bash not found; continuing with current env" >&2
