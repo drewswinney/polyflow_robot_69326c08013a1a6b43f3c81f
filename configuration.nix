@@ -171,12 +171,11 @@ let
       )
 
       # Also pick up per-package local_setup scripts from the workspace only
-      for prefix in "${rosWorkspace}"; do
-        for script in "$prefix"/share/*/local_setup.bash "$prefix"/share/*/setup.bash; do
-          if [ -f "$script" ]; then
-            setup_scripts+=("$script")
-          fi
-        done
+      prefix="${rosWorkspace}"
+      for script in "$prefix"/share/*/local_setup.bash "$prefix"/share/*/setup.bash; do
+        if [ -f "$script" ]; then
+          setup_scripts+=("$script")
+        fi
       done
 
       set +u
