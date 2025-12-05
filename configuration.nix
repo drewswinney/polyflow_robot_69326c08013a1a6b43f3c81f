@@ -115,10 +115,6 @@ let
       PYTHONPATH="''${PYTHONPATH-}"
       AMENT_PREFIX_PATH="''${AMENT_PREFIX_PATH-}"
       LD_LIBRARY_PATH="''${LD_LIBRARY_PATH-}"
-      if [ -z "''${RMW_IMPLEMENTATION-}" ]; then
-        RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-      fi
-      export RMW_IMPLEMENTATION
 
       set -u
       shopt -s nullglob
@@ -188,6 +184,11 @@ let
       done
       set -u
 
+      if [ -z "''${RMW_IMPLEMENTATION-}" ]; then
+        RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      fi
+      export RMW_IMPLEMENTATION
+
       launch_entries=()
       while IFS= read -r launch_file; do
         pkg=$(basename "$(dirname "$launch_file")")
@@ -235,10 +236,6 @@ let
       PYTHONPATH="''${PYTHONPATH-}"
       AMENT_PREFIX_PATH="''${AMENT_PREFIX_PATH-}"
       LD_LIBRARY_PATH="''${LD_LIBRARY_PATH-}"
-      if [ -z "''${RMW_IMPLEMENTATION-}" ]; then
-        RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-      fi
-      export RMW_IMPLEMENTATION
 
       set -u
       shopt -s nullglob
@@ -276,6 +273,11 @@ let
         done
       done
       set -u
+
+      if [ -z "''${RMW_IMPLEMENTATION-}" ]; then
+        RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      fi
+      export RMW_IMPLEMENTATION
 
       exec ros2 launch webrtc webrtc.launch.py
     '';
