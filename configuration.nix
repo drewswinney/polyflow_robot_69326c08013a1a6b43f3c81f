@@ -354,7 +354,7 @@ let
             continue
           fi
           echo "[wifi-mode] Restarting $svc after STA activation" >&2
-          if ! systemctl restart "$svc"; then
+          if ! systemctl restart --no-block "$svc"; then
             echo "[wifi-mode] Warning: failed to restart $svc" >&2
           fi
         done
