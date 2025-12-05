@@ -105,7 +105,7 @@ let
       set -euo pipefail
       shopt -s nullglob
   
-      # 1) Source the env that nix-ros-overlay generated for the workspace
+      # 1 Source the env that nix-ros-overlay generated for the workspace
       if [ -f "${rosWorkspaceEnv}/setup.bash" ]; then
         echo "[workspace-launch] Sourcing rosWorkspaceEnv: ${rosWorkspaceEnv}/setup.bash" >&2
         # shellcheck disable=SC1090
@@ -114,7 +114,7 @@ let
         echo "[workspace-launch] WARNING: ${rosWorkspaceEnv}/setup.bash not found; continuing with current env" >&2
       fi
   
-      # 2) Optional: also source workspace-local setup scripts (keeps your previous behavior)
+      # 2 Optional: also source workspace-local setup scripts (keeps your previous behavior)
       prefix="${rosWorkspace}"
       for script in \
         "$prefix/setup.bash" \
@@ -131,7 +131,7 @@ let
         fi
       done
   
-      # 3) Make sure RMW is set, but don't fight the environment if it already is
+      # 3 Make sure RMW is set, but don't fight the environment if it already is
       : "''${RMW_IMPLEMENTATION:=rmw_fastrtps_cpp}"
       export RMW_IMPLEMENTATION
   
@@ -144,7 +144,7 @@ let
       env | grep -E 'RMW|AMENT|RCLPY|LD_LIBRARY_PATH' | sort >&2
       echo "[workspace-launch] =============================" >&2
   
-      # 4) Discover launch files in the workspace
+      # 4 Discover launch files in the workspace
       launch_entries=()
       while IFS= read -r launch_file; do
         pkg=$(basename "$(dirname "$launch_file")")
@@ -157,7 +157,7 @@ let
         exit 0
       fi
   
-      # 5) Supervisor logic: run all launches and tear down on first failure
+      # 5 Supervisor logic: run all launches and tear down on first failure
       declare -a pids=()
   
       stop_children() {
