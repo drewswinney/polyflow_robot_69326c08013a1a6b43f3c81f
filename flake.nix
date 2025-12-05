@@ -222,6 +222,14 @@
             for exe in "$out/bin"/*; do
               [ -f "$exe" ] || continue
               ln -sf "$exe" "$out/lib/${name}/$(basename "$exe")"
+              # Ensure AMENT/PYTHON/LD_LIBRARY paths are seeded for direct execution
+              wrapProgram "$exe" \
+                --set-default AMENT_PREFIX_PATH "${lib.concatStringsSep ":" (map (pkg: "${pkg}") (with rosPkgs; [ ros-base rmw-cyclonedds-cpp rmw-implementation ]))}:$out" \
+                --suffix AMENT_PREFIX_PATH ":" "$AMENT_PREFIX_PATH" \
+                --set-default PYTHONPATH "$out/lib/python${pkgs.python3.pythonVersion}/site-packages" \
+                --suffix PYTHONPATH ":" "$PYTHONPATH" \
+                --set-default LD_LIBRARY_PATH "$out/lib" \
+                --suffix LD_LIBRARY_PATH ":" "$LD_LIBRARY_PATH"
             done
           fi
         '';
