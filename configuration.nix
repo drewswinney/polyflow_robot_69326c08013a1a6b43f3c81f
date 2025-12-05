@@ -867,8 +867,8 @@ in
 
   systemd.services.polyflow-webrtc = {
     description = "Run Polyflow WebRTC launch with ros2 launch";
-    after    = [ "network-online.target" "polyflow-wifi-mode.service" ];
-    wants    = [ "network-online.target" ];
+    after    = [ "network-online.target" ];
+    wants    = [ "network-online.target" "polyflow-wifi-mode.service" ];
     wantedBy = [ "multi-user.target" ];
     
     environment = {
