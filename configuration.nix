@@ -162,17 +162,17 @@ let
       set -u
 
       setup_scripts=(
-        # High-level env from rosWorkspaceEnv
-        "${rosWorkspaceEnv}/setup.bash"
-        "${rosWorkspaceEnv}/local_setup.bash"
-
         # Direct workspace env
         "${rosWorkspace}/setup.bash"
         "${rosWorkspace}/local_setup.bash"
+
+        # RMW implementations to ensure plugins are registered
+        "${rosPkgs."rmw-cyclonedds-cpp"}/share/rmw_cyclonedds_cpp/local_setup.bash"
+        "${rosPkgs."rmw-implementation"}/share/rmw_implementation/local_setup.bash"
       )
 
-      # Also pick up per-package local_setup scripts from both env + workspace
-      for prefix in "${rosWorkspaceEnv}" "${rosWorkspace}"; do
+      # Also pick up per-package local_setup scripts from the workspace only
+      for prefix in "${rosWorkspace}"; do
         for script in "$prefix"/share/*/local_setup.bash "$prefix"/share/*/setup.bash; do
           if [ -f "$script" ]; then
             setup_scripts+=("$script")
