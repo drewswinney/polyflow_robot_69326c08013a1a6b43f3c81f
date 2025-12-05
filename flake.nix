@@ -194,6 +194,7 @@
           trajectory-msgs
           geometry-msgs
           nav-msgs
+          rmw-fastrtps-cpp
         ] ++ [
           pkgs.python3Packages.pyyaml
         ];
