@@ -1,0 +1,12 @@
+[tool.poetry]
+name = "odrive_s1"
+version = "0.1.0"
+description = "Polyflow ODrive S1 controller node"
+authors = ["Drew Swinney <drew@polyflowrobotics.com>"]
+packages = [{ include = "odrive_s1" }]
+
+[tool.poetry.dependencies]
+odrive = "*"
+
+[tool.poetry.scripts]
+odrive_s1_node = "odrive_s1.node:main"

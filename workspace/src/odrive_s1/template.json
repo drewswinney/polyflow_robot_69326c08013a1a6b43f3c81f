@@ -1,0 +1,145 @@
+{
+  "type": "controller",
+  "name": "ODrive S1 Controller",
+  "entry_point": "odrive_s1/node.py",
+  "topics": [
+    {
+      "name": "/joint/state",
+      "direction": "publish",
+      "msg_type": "sensor_msgs/JointState",
+      "qos": {
+        "reliability": "best_effort",
+        "history": "keep_last",
+        "depth": 10
+      }
+    },
+    {
+      "name": "/joint_controller/command",
+      "direction": "subscribe",
+      "msg_type": "trajectory_msgs/JointTrajectory",
+      "qos": {
+        "reliability": "reliable",
+        "history": "keep_last",
+        "depth": 10
+      }
+    }
+  ],
+  "services": [],
+  "actions": [],
+  "parameters_schema": {
+    "joint": {
+      "label": "Joint",
+      "requiresInstance": true,
+      "type": "entity",
+      "required": true,
+      "description": "Joint ID this controller manages",
+      "entity_source": {
+        "selector": "components.outputs",
+        "filters": {
+          "output_type": "joint",
+          "joint_type": "revolute,continuous"
+        },
+        "value_field": "_id",
+        "label_field": "name"
+      },
+      "ui": { "group": "Joint", "order": 1 }
+    },
+
+    "control_mode": {
+      "label": "Control Mode",
+      "type": "enum",
+      "values": ["velocity", "position", "torque"],
+      "default": "position",
+      "ui": { "group": "Control", "order": 2 }
+    },
+
+    "limit.lower_position": {
+      "label": "Min. Rotation",
+      "type": "number",
+      "source": "entity_property",
+      "binding": {
+        "from_param": "joint",
+        "field_path": "limit.lower_position"
+      },
+      "editable": false,
+      "ui": { "group": "Limits", "order": 1 }
+    },
+
+    "limit.upper_position": {
+      "label": "Max. Rotation",
+      "type": "number",
+      "source": "entity_property",
+      "binding": {
+        "from_param": "joint",
+        "field_path": "limit.upper_position"
+      },
+      "editable": false,
+      "ui": { "group": "Limits", "order": 2 }
+    },
+
+    "limit.position_step": {
+      "label": "Rotation Step",
+      "type": "number",
+      "source": "entity_property",
+      "binding": {
+        "from_param": "joint",
+        "field_path": "limit.position_step"
+      },
+      "editable": false,
+      "ui": { "group": "Limits", "order": 3 }
+    },
+
+    "limit.max_effort": {
+      "label": "Max Effort",
+      "type": "number",
+      "source": "entity_property",
+      "binding": {
+        "from_param": "joint",
+        "field_path": "limit.max_effort"
+      },
+      "editable": false,
+      "ui": { "group": "Limits", "order": 4 }
+    },
+
+    "limit.effort_step": {
+      "label": "Effort Step",
+      "type": "number",
+      "source": "entity_property",
+      "binding": {
+        "from_param": "joint",
+        "field_path": "limit.effort_step"
+      },
+      "editable": false,
+      "ui": { "group": "Limits", "order": 5 }
+    },
+
+    "limit.max_velocity": {
+      "label": "Max Velocity",
+      "type": "number",
+      "source": "entity_property",
+      "binding": {
+        "from_param": "joint",
+        "field_path": "limit.max_velocity"
+      },
+      "editable": false,
+      "ui": { "group": "Limits", "order": 6 }
+    },
+
+    "limit.velocity_step": {
+      "label": "Velocity Step",
+      "type": "number",
+      "source": "entity_property",
+      "binding": {
+        "from_param": "joint",
+        "field_path": "limit.velocity_step"
+      },
+      "editable": false,
+      "ui": { "group": "Limits", "order": 7 }
+    }
+  },
+  "defaults": {
+    "namespace": "/robot/base",
+    "rate_hz": 150,
+    "lifecycle": true
+  }
+}
