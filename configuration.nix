@@ -132,7 +132,6 @@ let
       echo "[workspace-launch] LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >&2
       echo "[workspace-launch] RMW_IMPLEMENTATION=$RMW_IMPLEMENTATION" >&2
 
-
       export PYTHONPATH
       export AMENT_PREFIX_PATH
       export LD_LIBRARY_PATH
@@ -152,7 +151,7 @@ let
       done
       set -u
 
-      RMW_IMPLEMENTATION="${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}"
+      RMW_IMPLEMENTATION="''${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}"
       export RMW_IMPLEMENTATION
       echo "[webrtc-launch] RMW_IMPLEMENTATION (post-setup)=$RMW_IMPLEMENTATION" >&2
 
@@ -183,7 +182,7 @@ let
       set -u
 
       # Force the desired RMW after sourcing in case any setup script overrode it.
-      RMW_IMPLEMENTATION="${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}"
+      RMW_IMPLEMENTATION="''${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}"
       export RMW_IMPLEMENTATION
       echo "[workspace-launch] RMW_IMPLEMENTATION (post-setup)=$RMW_IMPLEMENTATION" >&2
 
