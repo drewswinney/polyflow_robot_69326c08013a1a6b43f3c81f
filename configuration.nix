@@ -146,6 +146,21 @@ let
       export AMENT_PREFIX_PATH
       export LD_LIBRARY_PATH
 
+      # Local setup scripts expect AMENT_TRACE_SETUP_FILES to be unset when absent.
+      set +u
+      for prefix in ${runtimePrefixes}; do
+        for script in "$prefix"/setup.bash "$prefix"/local_setup.bash \
+                      "$prefix"/install/setup.bash "$prefix"/install/local_setup.bash \
+                      "$prefix"/share/*/local_setup.bash "$prefix"/share/*/setup.bash; do
+          if [ -f "$script" ]; then
+            echo "[INFO] Sourcing $script" >&2
+            # shellcheck disable=SC1090
+            . "$script"
+          fi
+        done
+      done
+      set -u
+
       setup_scripts=(
         # High-level env from rosWorkspaceEnv
         "${rosWorkspaceEnv}/setup.bash"
