@@ -162,10 +162,9 @@ let
       set -u
 
       setup_scripts=(
-        # Direct workspace env
+        # Direct workspace env (keep it tight to avoid env overflow)
         "${rosWorkspace}/setup.bash"
         "${rosWorkspace}/local_setup.bash"
-
         # RMW implementations to ensure plugins are registered
         "${rosPkgs."rmw-cyclonedds-cpp"}/share/rmw_cyclonedds_cpp/local_setup.bash"
         "${rosPkgs."rmw-implementation"}/share/rmw_implementation/local_setup.bash"
