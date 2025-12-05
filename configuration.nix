@@ -115,6 +115,10 @@ let
       PYTHONPATH="''${PYTHONPATH-}"
       AMENT_PREFIX_PATH="''${AMENT_PREFIX_PATH-}"
       LD_LIBRARY_PATH="''${LD_LIBRARY_PATH-}"
+      if [ -z "''${RMW_IMPLEMENTATION-}" ]; then
+        RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      fi
+      export RMW_IMPLEMENTATION
 
       set -u
       shopt -s nullglob
