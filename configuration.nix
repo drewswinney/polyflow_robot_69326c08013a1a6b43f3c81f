@@ -74,7 +74,14 @@ let
     (lib.makeSearchPath "lib/python${py.pythonVersion}/site-packages" [ pyEnv webrtcEnv webrtcPkg ])
   ]);
 
-  amentRoots = [ rosPkgs.ros-base rosWorkspaceEnv rosWorkspace webrtcPkg ];
+  amentRoots = [
+    rosPkgs.ros-base
+    rosPkgs."rmw-cyclonedds-cpp"
+    rosPkgs."rmw-implementation"
+    rosWorkspaceEnv
+    rosWorkspace
+    webrtcPkg
+  ];
   amentPrefixPath = lib.concatStringsSep ":" (map (pkg: "${pkg}") amentRoots);
 
   runtimeInputs = [
