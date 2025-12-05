@@ -102,10 +102,18 @@ let
     name = "polyflow-workspace-launch";
     runtimeInputs = runtimeInputs;
     text = ''
-      set -euo pipefail
+      # Be strict, but don't break ROS setup scripts
+      set -eo pipefail
       shopt -s nullglob
   
+      # Make sure AMENT_TRACE_SETUP_FILES exists before we ever enable -u
+      : "''${AMENT_TRACE_SETUP_FILES:=}"
+  
+      # Now turn on -u (unbound var check)
+      set -u
+  
       # 1 Source the env that nix-ros-overlay generated for the workspace
+      set +u
       if [ -f "${rosWorkspaceEnv}/setup.bash" ]; then
         echo "[workspace-launch] Sourcing rosWorkspaceEnv: ${rosWorkspaceEnv}/setup.bash" >&2
         # shellcheck source=/dev/null  # avoid SC1091: external file not known at lint time
@@ -113,9 +121,11 @@ let
       else
         echo "[workspace-launch] WARNING: ${rosWorkspaceEnv}/setup.bash not found; continuing with current env" >&2
       fi
+      set -u
   
       # 2 Optional: also source workspace-local setup scripts (keeps your previous behavior)
       prefix="${rosWorkspace}"
+      set +u
       for script in \
         "$prefix/setup.bash" \
         "$prefix/local_setup.bash" \
@@ -130,6 +140,7 @@ let
           . "$script"
         fi
       done
+      set -u
   
       # 3 Make sure RMW is set, but don't fight the environment if it already is
       : "''${RMW_IMPLEMENTATION:=rmw_fastrtps_cpp}"
@@ -190,7 +201,7 @@ let
         echo "[workspace-launch]   -> PID $pid" >&2
       done
   
-      status=0
+      status = 0
       while :; do
         if ! wait -n; then
           status=$?
@@ -202,7 +213,6 @@ let
       done
     '';
   };
-
   webrtcLauncher = pkgs.writeShellApplication {
     name = "webrtc-launch";
     runtimeInputs = runtimeInputs;
