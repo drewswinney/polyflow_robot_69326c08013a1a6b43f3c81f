@@ -99,15 +99,7 @@ let
 
   workspaceLauncher = pkgs.writeShellApplication {
     name = "polyflow-workspace-launch";
-    runtimeInputs = [
-      rosWorkspaceEnv
-      rosWorkspace
-      pkgs.bash
-      pkgs.coreutils
-      pkgs.findutils
-      pkgs.gawk
-      pkgs.systemd
-    ];
+    runtimeInputs = runtimeInputs;
     text = ''
       set -euo pipefail
 
