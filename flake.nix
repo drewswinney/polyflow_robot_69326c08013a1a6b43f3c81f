@@ -208,7 +208,7 @@
         # Avoid auto-adding a "debug" output (not emitted by most ROS packages here).
         separateDebugInfo = false;
         propagatedBuildInputs =
-          (lib.optionals (isAmentPythonPkg name) defaultRosRuntime)
+          defaultRosRuntime
           ++ lib.optionals (rosPoetryDeps ? name) [ rosPoetryDeps.${name} ];
       }
       // lib.optionalAttrs (isAmentPythonPkg name) {
