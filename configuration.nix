@@ -98,112 +98,68 @@ let
   runtimePrefixes = lib.concatStringsSep " " (map (pkg: "${pkg}") runtimeInputs);
   libraryPath = lib.makeLibraryPath runtimeInputs;
 
-    workspaceLauncher = pkgs.writeShellApplication {
+  workspaceLauncher = pkgs.writeShellApplication {
     name = "polyflow-workspace-launch";
     runtimeInputs = runtimeInputs;
     text = ''
       set -euo pipefail
-
-      PATH="''${PATH-}"
-      PYTHONPATH="''${PYTHONPATH-}"
-      AMENT_PREFIX_PATH="''${AMENT_PREFIX_PATH-}"
-      LD_LIBRARY_PATH="''${LD_LIBRARY_PATH-}"
-
-      # Default RMW if not already set by the environment
-      : "''${RMW_IMPLEMENTATION:=rmw_fastrtps_cpp}"
-
-      set -u
       shopt -s nullglob
-
-      # Instead of clobbering, prepend our values to whatever nix-ros-env already set up.
-      PYTHONPATH="${pythonPath}''${PYTHONPATH:+:$PYTHONPATH}"
-      AMENT_PREFIX_PATH="${amentPrefixPath}''${AMENT_PREFIX_PATH:+:$AMENT_PREFIX_PATH}"
-      LD_LIBRARY_PATH="${libraryPath}''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-
-      export PYTHONPATH
-      export AMENT_PREFIX_PATH
-      export LD_LIBRARY_PATH
+  
+      # 1) Source the env that nix-ros-overlay generated for the workspace
+      if [ -f "${rosWorkspaceEnv}/setup.bash" ]; then
+        echo "[workspace-launch] Sourcing rosWorkspaceEnv: ${rosWorkspaceEnv}/setup.bash" >&2
+        # shellcheck disable=SC1090
+        . "${rosWorkspaceEnv}/setup.bash"
+      else
+        echo "[workspace-launch] WARNING: ${rosWorkspaceEnv}/setup.bash not found; continuing with current env" >&2
+      fi
+  
+      # 2) Optional: also source workspace-local setup scripts (keeps your previous behavior)
+      prefix="${rosWorkspace}"
+      for script in \
+        "$prefix/setup.bash" \
+        "$prefix/local_setup.bash" \
+        "$prefix/install/setup.bash" \
+        "$prefix/install/local_setup.bash" \
+        "$prefix"/share/*/local_setup.bash \
+        "$prefix"/share/*/setup.bash
+      do
+        if [ -f "$script" ]; then
+          echo "[workspace-launch] Sourcing workspace script $script" >&2
+          # shellcheck disable=SC1090
+          . "$script"
+        fi
+      done
+  
+      # 3) Make sure RMW is set, but don't fight the environment if it already is
+      : "''${RMW_IMPLEMENTATION:=rmw_fastrtps_cpp}"
       export RMW_IMPLEMENTATION
-
+  
       echo "[workspace-launch] AMENT_PREFIX_PATH=$AMENT_PREFIX_PATH" >&2
       echo "[workspace-launch] PYTHONPATH=$PYTHONPATH" >&2
       echo "[workspace-launch] LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >&2
       echo "[workspace-launch] RMW_IMPLEMENTATION=$RMW_IMPLEMENTATION" >&2
-
-      # Local setup scripts expect AMENT_TRACE_SETUP_FILES to be unset when absent.
-      set +u
-      for prefix in ${runtimePrefixes}; do
-        for script in "$prefix"/setup.bash "$prefix"/local_setup.bash \
-                      "$prefix"/install/setup.bash "$prefix"/install/local_setup.bash \
-                      "$prefix"/share/*/local_setup.bash "$prefix"/share/*/setup.bash; do
-          if [ -f "$script" ]; then
-            echo "[workspace-launch] Sourcing runtime prefix script $script" >&2
-            # shellcheck disable=SC1090
-            . "$script"
-          fi
-        done
-      done
-      set -u
-
-      # Build a focused list of setup scripts for the workspace itself.
-      setup_scripts=(
-        "${rosWorkspace}/setup.bash"
-        "${rosWorkspace}/local_setup.bash"
-      )
-
-      prefix="${rosWorkspace}"
-      for script in "$prefix"/share/*/local_setup.bash "$prefix"/share/*/setup.bash; do
-        if [ -f "$script" ]; then
-          setup_scripts+=("$script")
-        fi
-      done
-
-      set +u
-      for script in "''${setup_scripts[@]}"; do
-        [ -f "$script" ] || continue
-        echo "[workspace-launch] Sourcing workspace script $script" >&2
-        # shellcheck disable=SC1090
-        . "$script"
-      done
-      set -u
-
-      # Force the desired RMW after all setup scripts (in case they overrode it).
-      if [ -z "''${RMW_IMPLEMENTATION-}" ]; then
-        RMW_IMPLEMENTATION=rmw_fastrtps_cpp
-      fi
-      export RMW_IMPLEMENTATION
-      echo "[workspace-launch] RMW_IMPLEMENTATION (final)=$RMW_IMPLEMENTATION" >&2
-
-      # Discover launch files in the workspace.
-      share_root="${rosWorkspace}/share"
-
+  
+      echo "[workspace-launch] ==== ENV DUMP (filtered) ====" >&2
+      env | grep -E 'RMW|AMENT|RCLPY|LD_LIBRARY_PATH' | sort >&2
+      echo "[workspace-launch] =============================" >&2
+  
+      # 4) Discover launch files in the workspace
       launch_entries=()
       while IFS= read -r launch_file; do
-        # Strip the leading "${rosWorkspace}/share/" to get "<pkg>/.../foo.launch.py"
-        rel="''${launch_file#"$share_root/"}"
-        pkg="''${rel%%/*}"
-        base="$(basename "$launch_file")"
-
-        # Only keep launch files that are actually attached to a proper ROS package
-        if [ -z "$pkg" ] || [ ! -d "$share_root/$pkg" ] || [ ! -f "$share_root/$pkg/package.xml" ]; then
-          echo "[workspace-launch] Skipping non-package launch file: $launch_file (pkg='$pkg')" >&2
-          continue
-        fi
-
+        pkg=$(basename "$(dirname "$launch_file")")
+        base=$(basename "$launch_file")
         launch_entries+=("$pkg:$base")
-      # Follow symlinks so we actually see launch files in the symlink forest.
-      done < <(find -L "$share_root" -maxdepth 5 -type f -name '*.launch.py' -print | sort)
-
+      done < <(find -L "${rosWorkspace}/share" -maxdepth 3 -type f -name '*.launch.py' -print | sort)
+  
       if [ "''${#launch_entries[@]}" -eq 0 ]; then
-        echo "[workspace-launch] No launch files found under $share_root" >&2
+        echo "[workspace-launch] No launch files found under ${rosWorkspace}/share" >&2
         exit 0
       fi
-
-
-      # --- Supervisor mode: manage multiple ros2 launch children ---
-
+  
+      # 5) Supervisor logic: run all launches and tear down on first failure
       declare -a pids=()
-
+  
       stop_children() {
         echo "[workspace-launch] Stopping child launches..." >&2
         for pid in "''${pids[@]}"; do
@@ -213,32 +169,27 @@ let
           fi
         done
       }
-
+  
       on_term() {
         echo "[workspace-launch] Caught termination signal" >&2
         stop_children
       }
-
+  
       trap on_term TERM INT
-
-      echo "[workspace-launch] ==== ENV DUMP (filtered) ====" >&2
-      env | grep -E 'RMW|AMENT|RCLPY|LD_LIBRARY_PATH' | sort >&2
-      echo "[workspace-launch] =============================" >&2
-
+  
       echo "[workspace-launch] Launching ''${#launch_entries[@]} launch file(s)" >&2
-
+  
       for entry in "''${launch_entries[@]}"; do
         pkg="''${entry%%:*}"
         launch="''${entry#*:}"
-
+  
         echo "[workspace-launch] Starting: ros2 launch $pkg $launch" >&2
         ros2 launch "$pkg" "$launch" &
         pid=$!
         pids+=("$pid")
         echo "[workspace-launch]   -> PID $pid" >&2
       done
-
-      # If *any* child exits, bring the rest down and exit with that status.
+  
       status=0
       while :; do
         if ! wait -n; then
