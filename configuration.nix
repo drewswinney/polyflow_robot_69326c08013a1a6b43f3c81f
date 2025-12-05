@@ -213,6 +213,13 @@ let
         pids+=("$!")
       done
 
+      # Use the *same* shell snippet your service does, but end it with this:
+      python3 - << 'EOF'
+      import rclpy, os, inspect
+      print("RMW_IMPLEMENTATION env:", os.environ.get("RMW_IMPLEMENTATION"))
+      print("rclpy from:", inspect.getfile(rclpy))
+      EOF
+
       wait
     '';
   };
