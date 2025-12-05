@@ -84,9 +84,10 @@ let
   ];
   amentPrefixPath = lib.concatStringsSep ":" (map (pkg: "${pkg}") amentRoots);
 
-  runtimeInputs = [
+  runtimeInputs = lib.unique [
     rosPkgs.ros-base
     rosPkgs."rmw-cyclonedds-cpp"
+    rosPkgs."rmw-fastrtps-cpp"
     rosPkgs."rmw-implementation"
     rosWorkspaceEnv
     rosWorkspace
