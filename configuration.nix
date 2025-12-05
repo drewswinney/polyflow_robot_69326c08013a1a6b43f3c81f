@@ -142,14 +142,9 @@ let
       done
       set -u
   
-      # 3 Make sure RMW is set, but don't fight the environment if it already is
-      : "''${RMW_IMPLEMENTATION:=rmw_cyclonedds_cpp}"
-      export RMW_IMPLEMENTATION
-  
       echo "[workspace-launch] AMENT_PREFIX_PATH=$AMENT_PREFIX_PATH" >&2
       echo "[workspace-launch] PYTHONPATH=$PYTHONPATH" >&2
       echo "[workspace-launch] LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >&2
-      echo "[workspace-launch] RMW_IMPLEMENTATION=$RMW_IMPLEMENTATION" >&2
   
       echo "[workspace-launch] ==== ENV DUMP (filtered) ====" >&2
       env | grep -E 'RMW|AMENT|RCLPY|LD_LIBRARY_PATH' | sort >&2
@@ -213,6 +208,7 @@ let
       done
     '';
   };
+
   webrtcLauncher = pkgs.writeShellApplication {
     name = "webrtc-launch";
     runtimeInputs = runtimeInputs;
@@ -261,11 +257,6 @@ let
         done
       done
       set -u
-
-      if [ -z "''${RMW_IMPLEMENTATION-}" ]; then
-        RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-      fi
-      export RMW_IMPLEMENTATION
 
       exec ros2 launch webrtc webrtc.launch.py
     '';
