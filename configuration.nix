@@ -201,7 +201,7 @@ let
         echo "[workspace-launch]   -> PID $pid" >&2
       done
   
-      status = 0
+      status=0
       while :; do
         if ! wait -n; then
           status=$?
