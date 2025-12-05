@@ -104,26 +104,31 @@ let
     text = ''
       set -euo pipefail
 
-      # Base env – keep PATH from parent, but start the ROS-related env clean.
       PATH="''${PATH-}"
-      PYTHONPATH="${pythonPath}"
-      AMENT_PREFIX_PATH="${amentPrefixPath}"
-      LD_LIBRARY_PATH="${libraryPath}"
+      PYTHONPATH="''${PYTHONPATH-}"
+      AMENT_PREFIX_PATH="''${AMENT_PREFIX_PATH-}"
+      LD_LIBRARY_PATH="''${LD_LIBRARY_PATH-}"
 
-      # Default RMW if not provided from outside.
-      if [ -z "''${RMW_IMPLEMENTATION-}" ]; then
-        RMW_IMPLEMENTATION=rmw_fastrtps_cpp
-      fi
+      # Default RMW if not already set by the environment
+      : "''${RMW_IMPLEMENTATION:=rmw_fastrtps_cpp}"
+
+      set -u
+      shopt -s nullglob
+
+      # Instead of clobbering, prepend our values to whatever nix-ros-env already set up.
+      PYTHONPATH="${pythonPath}''${PYTHONPATH:+:$PYTHONPATH}"
+      AMENT_PREFIX_PATH="${amentPrefixPath}''${AMENT_PREFIX_PATH:+:$AMENT_PREFIX_PATH}"
+      LD_LIBRARY_PATH="${libraryPath}''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+
+      export PYTHONPATH
+      export AMENT_PREFIX_PATH
+      export LD_LIBRARY_PATH
       export RMW_IMPLEMENTATION
 
       echo "[workspace-launch] AMENT_PREFIX_PATH=$AMENT_PREFIX_PATH" >&2
       echo "[workspace-launch] PYTHONPATH=$PYTHONPATH" >&2
       echo "[workspace-launch] LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >&2
-      echo "[workspace-launch] RMW_IMPLEMENTATION (pre-setup)=$RMW_IMPLEMENTATION" >&2
-
-      export PYTHONPATH
-      export AMENT_PREFIX_PATH
-      export LD_LIBRARY_PATH
+      echo "[workspace-launch] RMW_IMPLEMENTATION=$RMW_IMPLEMENTATION" >&2
 
       # Local setup scripts expect AMENT_TRACE_SETUP_FILES to be unset when absent.
       set +u
